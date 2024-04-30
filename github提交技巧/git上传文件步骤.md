@@ -24,3 +24,13 @@
 5.git push -u origin master               # 将本次更改更新到github项目上去
 ```
 
+
+
+## 3.更新文件步骤
+
+```
+1.git add * (将当前文件提交到该仓库中)
+2.git commit -m "提交描述" (提交操作)
+3.git push -u origin main(提交到远程仓库)
+```
+
