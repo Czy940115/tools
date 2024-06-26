@@ -1,44 +1,44 @@
 package com.czy;
 
-import com.sun.source.tree.WhileLoopTree;
-import org.w3c.dom.NameList;
+import cn.hutool.core.util.ReUtil;
+import cn.hutool.http.HttpUtil;
 
-import java.io.*;
-import java.net.*;
+import java.io.BufferedWriter;
+import java.io.Console;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * ClassName: Reptiles
+ * ClassName: ReptilesHutools
  * Package: com.czy
  * Description:
- *
+ *  利用Hutools工具实现爬取操作
  * @Author Chen Ziyun
  * @Version 1.0
  */
-public class Reptiles {
-    public static void main(String[] args) throws URISyntaxException, IOException {
+public class ReptilesHutools {
+    public static void main(String[] args) throws IOException {
         /**
-            制造假数据：
-             获取姓氏：https://hanyu.baidu.com/shici/detail?pid=0b2f26d4c0ddb3ee693fdb1137ee1b0d&from=kg0
-             获取男生名字：http://www.haoming8.cn/baobao/10881.html
-             获取女生名字：http://www.haoming8.cn/baobao/7641.html
+         制造假数据：
+         获取姓氏：https://hanyu.baidu.com/shici/detail?pid=0b2f26d4c0ddb3ee693fdb1137ee1b0d&from=kg0
+         获取男生名字：http://www.haoming8.cn/baobao/10881.html
+         获取女生名字：http://www.haoming8.cn/baobao/7641.html
          */
         // 1.从网页中获取数据 百家姓：赵钱孙李，周吴郑王
         String faimlyUrl = "https://hanyu.baidu.com/shici/detail?pid=0b2f26d4c0ddb3ee693fdb1137ee1b0d&from=kg0";
         String boyNameUrl = "http://www.haoming8.cn/baobao/10881.html";
         String girlNameUrl = "http://www.haoming8.cn/baobao/7641.html";
 
-        String faimlyAllStr = getAllInfo(faimlyUrl);
-        String boyNameAllStr = getAllInfo(boyNameUrl);
-        String girlNameAllStr = getAllInfo(girlNameUrl);
+        //请求列表页
+        String faimlyContent = HttpUtil.get(faimlyUrl);
+        String boyNameContent = HttpUtil.get(boyNameUrl);
+        String girlNameContent = HttpUtil.get(girlNameUrl);
 
-        // 2.将从网页中获取的海量数据，进行解析，提取出需要的数据
-        List<String> faimlyTempList = getData(faimlyAllStr, "([\\u4e00-\\u9fa5]{4})(，|。)", 1);
-        List<String> boyNameTempList = getData(boyNameAllStr, "([\\u4e00-\\u9fa5]{2})(、|。)", 1);
-        List<String> girlNameTempList = getData(girlNameAllStr, "[\\u4e00-\\u9fa5]{2} [\\u4e00-\\u9fa5]{2} [\\u4e00-\\u9fa5]{2} [\\u4e00-\\u9fa5]{2}", 0);
+        List<String> faimlyTempList = ReUtil.findAll("([\\u4e00-\\u9fa5]{4})(，|。)", faimlyContent, 1);
+        List<String> boyNameTempList = ReUtil.findAll("([\\u4e00-\\u9fa5]{2})(、|。)", boyNameContent, 1);
+        List<String> girlNameTempList = ReUtil.findAll("(.. ){4}..", girlNameContent, 0);
 
         // 3.处理获取的数据
         // 3.1 姓数据
@@ -110,41 +110,4 @@ public class Reptiles {
         return result.stream().collect(Collectors.toList());
     }
 
-    /**
-     * 根据正则表达式，获取网页中所需要的数据
-     * @param str
-     * @param regix
-     * @param index
-     * @return
-     */
-    private static List<String> getData(String str, String regix, int index) {
-        // 1.根据正则表达式获取所需的数据
-        List<String> strs = new ArrayList<String>();
-        Pattern p = Pattern.compile(regix);
-        Matcher m = p.matcher(str);
-        while(m.find()) {
-            strs.add(m.group(index));
-        }
-        return strs;
-    }
-
-    /**
-     * 根据提供的网络地址，获取到网页上的所有数据并返回字符串
-     * @param urlStr: 提供的url地址
-     * @return 网页中的字符串
-     */
-    private static String getAllInfo(String urlStr) throws IOException {
-        // 1.和网页建立连接
-        URL url = new URL(urlStr);
-        URLConnection connection = url.openConnection();
-
-        // 2.从网页中获取数据
-        StringBuilder result = new StringBuilder();
-        InputStreamReader streamReader = new InputStreamReader(connection.getInputStream());
-        int len;
-        while ((len = streamReader.read()) != -1){
-            result.append((char) len);
-        }
-        return result.toString();
-    }
 }
